@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
-<title>サケ遡上30秒チャレンジ v6</title>
+<title>サケ遡上30秒チャレンジ v7</title>
 <style>
 :root{
   --safe-top: env(safe-area-inset-top, 0px);
@@ -370,77 +370,80 @@ button:active{transform:translateY(1px)}
     ctx.shadowOffsetY = 4;
 
     // tail fin
-    ctx.fillStyle = '#8ea2b3';
+    ctx.fillStyle = '#f3f6f8';
+    ctx.strokeStyle = '#1f2a33';
+    ctx.lineWidth = 2.2;
     ctx.beginPath();
-    ctx.moveTo(0, player.h*0.34);
-    ctx.lineTo(-12, player.h*0.54);
-    ctx.lineTo(0, player.h*0.46);
-    ctx.lineTo(12, player.h*0.54);
+    ctx.moveTo(0, player.h*0.39);
+    ctx.lineTo(-12, player.h*0.58);
+    ctx.quadraticCurveTo(0, player.h*0.50, 12, player.h*0.58);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    // outer body with dark outline, inspired by reference illustration
+    ctx.fillStyle = '#f2f5f7';
+    ctx.beginPath();
+    ctx.moveTo(0, -player.h*0.50);
+    ctx.bezierCurveTo(-13, -player.h*0.42, -19, -player.h*0.08, -16, player.h*0.23);
+    ctx.bezierCurveTo(-12, player.h*0.39, -6, player.h*0.44, 0, player.h*0.45);
+    ctx.bezierCurveTo(6, player.h*0.44, 12, player.h*0.39, 16, player.h*0.23);
+    ctx.bezierCurveTo(19, -player.h*0.08, 13, -player.h*0.42, 0, -player.h*0.50);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    // blue back / head area
+    const back = ctx.createLinearGradient(0, -player.h*0.50, 0, player.h*0.02);
+    back.addColorStop(0, '#5b788e');
+    back.addColorStop(0.55, '#8aa3b3');
+    back.addColorStop(1, 'rgba(138,163,179,0)');
+    ctx.fillStyle = back;
+    ctx.beginPath();
+    ctx.moveTo(0, -player.h*0.50);
+    ctx.bezierCurveTo(-12, -player.h*0.42, -14, -player.h*0.18, -11, 0);
+    ctx.quadraticCurveTo(0, player.h*0.06, 11, 0);
+    ctx.bezierCurveTo(14, -player.h*0.18, 12, -player.h*0.42, 0, -player.h*0.50);
     ctx.closePath();
     ctx.fill();
 
-    // body silhouette: silver, simple top-down view
-    const body = ctx.createLinearGradient(0, -player.h*0.48, 0, player.h*0.43);
-    body.addColorStop(0, '#c8d6df');
-    body.addColorStop(0.22, '#eef4f7');
-    body.addColorStop(0.55, '#dde6eb');
-    body.addColorStop(1, '#aebfca');
-    ctx.fillStyle = body;
+    // belly highlight
+    ctx.fillStyle = 'rgba(255,255,255,.72)';
     ctx.beginPath();
-    ctx.moveTo(0, -player.h*0.48);
-    ctx.bezierCurveTo(-12, -player.h*0.41, -18, -player.h*0.08, -15, player.h*0.25);
-    ctx.bezierCurveTo(-11, player.h*0.40, -5, player.h*0.44, 0, player.h*0.44);
-    ctx.bezierCurveTo(5, player.h*0.44, 11, player.h*0.40, 15, player.h*0.25);
-    ctx.bezierCurveTo(18, -player.h*0.08, 12, -player.h*0.41, 0, -player.h*0.48);
-    ctx.closePath();
-    ctx.fill();
-
-    // blue head/back cap
-    const head = ctx.createLinearGradient(0, -player.h*0.48, 0, -player.h*0.05);
-    head.addColorStop(0, '#5f7f97');
-    head.addColorStop(1, '#89a3b4');
-    ctx.fillStyle = head;
-    ctx.beginPath();
-    ctx.moveTo(0, -player.h*0.48);
-    ctx.bezierCurveTo(-11, -player.h*0.41, -13, -player.h*0.22, -10, -player.h*0.02);
-    ctx.quadraticCurveTo(0, player.h*0.03, 10, -player.h*0.02);
-    ctx.bezierCurveTo(13, -player.h*0.22, 11, -player.h*0.41, 0, -player.h*0.48);
-    ctx.closePath();
+    ctx.ellipse(0, player.h*0.05, 7.5, 24, 0, 0, Math.PI*2);
     ctx.fill();
 
     // side fins
-    ctx.fillStyle = '#97aaba';
+    ctx.fillStyle = '#edf2f5';
     ctx.beginPath();
-    ctx.moveTo(-12, 2); ctx.lineTo(-24, 15); ctx.lineTo(-11, 18); ctx.closePath(); ctx.fill();
+    ctx.moveTo(-12, 0); ctx.lineTo(-24, 15); ctx.lineTo(-11, 19); ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
     ctx.beginPath();
-    ctx.moveTo(12, 2); ctx.lineTo(24, 15); ctx.lineTo(11, 18); ctx.closePath(); ctx.fill();
+    ctx.moveTo(12, 0); ctx.lineTo(24, 15); ctx.lineTo(11, 19); ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
 
     // dorsal fin
-    ctx.fillStyle = '#7892a4';
     ctx.beginPath();
     ctx.moveTo(0, -player.h*0.22); ctx.lineTo(-5, -player.h*0.08); ctx.lineTo(5, -player.h*0.08); ctx.closePath();
     ctx.fill();
-
-    // soft belly/light line
-    ctx.strokeStyle = 'rgba(255,255,255,.70)';
-    ctx.lineWidth = 2;
-    ctx.lineCap = 'round';
-    ctx.beginPath();
-    ctx.moveTo(0, -2); ctx.lineTo(0, 22);
     ctx.stroke();
 
-    // subtle decorative body marks only; no facial detail
-    ctx.strokeStyle = 'rgba(255,255,255,.42)';
+    // subtle fin lines / body accents
+    ctx.strokeStyle = 'rgba(31,42,51,.45)';
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(-8, 6); ctx.quadraticCurveTo(0, 10, 8, 6);
+    ctx.moveTo(-6, 18); ctx.quadraticCurveTo(0, 22, 6, 18);
+    ctx.stroke();
+
+    // keep face minimal: no eyes, just a tiny mouth notch impression at the tip
+    ctx.strokeStyle = '#1f2a33';
     ctx.lineWidth = 1.4;
     ctx.beginPath();
-    ctx.moveTo(-7, 4); ctx.quadraticCurveTo(0, 8, 7, 4);
-    ctx.moveTo(-6, 15); ctx.quadraticCurveTo(0, 19, 6, 15);
+    ctx.moveTo(-2, -player.h*0.42); ctx.quadraticCurveTo(0, -player.h*0.39, 2, -player.h*0.42);
     ctx.stroke();
-
-    ctx.fillStyle = 'rgba(84,106,121,.18)';
-    for(const [sx,sy,r] of [[-6,-8,1.3],[5,-1,1.2],[-5,8,1.1],[4,17,1.0]]){
-      ctx.beginPath(); ctx.arc(sx, sy, r, 0, Math.PI*2); ctx.fill();
-    }
 
     ctx.restore();
   }

@@ -3,70 +3,479 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
-<title>サケ遡上30秒チャレンジ</title>
+<title>サケ遡上30秒チャレンジ v3</title>
 <style>
-:root{--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px)}
-*{box-sizing:border-box}html,body{margin:0;height:100%;overflow:hidden;background:#081a2b;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}body{touch-action:none;color:#fff}
+:root{
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --ink:#f5fbff;
+  --muted:rgba(235,248,255,.72);
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;background:#07131d;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body{touch-action:none;color:var(--ink)}
 #app{height:100%;display:flex;flex-direction:column;padding-top:var(--safe-top);padding-bottom:var(--safe-bottom)}
-#hud{height:76px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;align-items:center;padding:10px 12px;background:rgba(4,17,29,.95);border-bottom:1px solid rgba(255,255,255,.15)}
-.metric{text-align:center}.metric small{display:block;font-size:12px;opacity:.72;letter-spacing:.08em}.metric strong{display:block;font-size:25px;line-height:1.1}
-#gameWrap{position:relative;flex:1;min-height:0}canvas{display:block;width:100%;height:100%;background:#0b5f86}
-#overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(4,20,32,.50);backdrop-filter:blur(3px)}
-.card{width:min(420px,92vw);border-radius:24px;padding:26px 22px;background:rgba(4,25,41,.93);border:1px solid rgba(255,255,255,.18);box-shadow:0 18px 50px rgba(0,0,0,.35);text-align:center}
-h1{margin:0 0 8px;font-size:30px;line-height:1.15}.subtitle{margin:0 0 20px;color:#b9eaff;line-height:1.65}.tip{font-size:14px;line-height:1.6;color:#d6edf7;background:rgba(255,255,255,.07);padding:12px;border-radius:14px;margin:14px 0 20px}
-button{appearance:none;border:0;border-radius:16px;font-weight:800;font-size:18px;padding:15px 22px;background:#ff7a3d;color:#fff;box-shadow:0 7px 0 #a93f18;width:100%}button:active{transform:translateY(3px);box-shadow:0 4px 0 #a93f18}
-#footer{position:absolute;left:0;right:0;bottom:10px;text-align:center;font-size:12px;color:rgba(255,255,255,.65);pointer-events:none}.badge{display:inline-block;padding:5px 10px;border-radius:999px;background:rgba(255,255,255,.11)}.hidden{display:none!important}
+#hud{
+  height:82px;
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:10px;
+  align-items:center;
+  padding:12px 14px;
+  background:linear-gradient(180deg, rgba(5,18,28,.88), rgba(5,18,28,.78));
+  border-bottom:1px solid rgba(255,255,255,.08);
+  backdrop-filter:blur(12px);
+}
+.metric{text-align:center}
+.metric small{display:block;font-size:12px;letter-spacing:.12em;color:var(--muted);margin-bottom:4px}
+.metric strong{display:block;font-size:26px;line-height:1.05;font-weight:800}
+#gameWrap{position:relative;flex:1;min-height:0;background:#0e4363}
+canvas{display:block;width:100%;height:100%}
+#overlay{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  padding:24px;background:rgba(4,12,20,.34);backdrop-filter:blur(3px)
+}
+.card{
+  width:min(430px,92vw);padding:26px 22px;border-radius:26px;
+  background:linear-gradient(180deg, rgba(8,29,43,.92), rgba(7,24,35,.90));
+  border:1px solid rgba(255,255,255,.12);
+  box-shadow:0 18px 60px rgba(0,0,0,.34);
+  text-align:center;
+}
+h1{margin:0 0 10px;font-size:30px;line-height:1.16;letter-spacing:.01em}
+.subtitle{margin:0 0 16px;color:#cde9f8;line-height:1.72;font-size:15px}
+.tip{
+  margin:0 0 20px;padding:13px 14px;border-radius:16px;
+  background:rgba(255,255,255,.06);color:#dceef9;line-height:1.66;font-size:14px
+}
+button{
+  appearance:none;border:0;border-radius:18px;width:100%;
+  padding:16px 22px;font-size:18px;font-weight:800;color:white;
+  background:linear-gradient(180deg,#ff8f5a,#ef644a);
+  box-shadow:0 8px 20px rgba(239,100,74,.36), inset 0 1px 0 rgba(255,255,255,.28);
+}
+button:active{transform:translateY(1px)}
+#footer{position:absolute;left:0;right:0;bottom:12px;text-align:center;pointer-events:none}
+.badge{
+  display:inline-block;padding:7px 12px;border-radius:999px;
+  background:rgba(255,255,255,.10);backdrop-filter:blur(8px);
+  color:rgba(244,250,255,.88);font-size:12px;letter-spacing:.04em
+}
+.hidden{display:none!important}
 </style>
 </head>
 <body>
 <div id="app">
-<div id="hud"><div class="metric"><small>残り</small><strong id="time">30.0</strong></div><div class="metric"><small>距離</small><strong><span id="distance">0</span>m</strong></div><div class="metric"><small>ライフ</small><strong id="life">❤️❤️❤️</strong></div></div>
-<div id="gameWrap"><canvas id="game"></canvas><div id="overlay"><div class="card"><h1>🐟 サケ遡上<br>30秒チャレンジ</h1><p class="subtitle">左右に指を滑らせ、岩と流木をかわして上流へ。</p><div class="tip">操作：画面を左右にスワイプ<br>金色の泡を取るとボーナス</div><button id="startBtn">遡上スタート</button></div></div><div id="footer"><span class="badge">指一本でプレイ</span></div></div>
+  <div id="hud">
+    <div class="metric"><small>残り</small><strong id="time">30.0</strong></div>
+    <div class="metric"><small>距離</small><strong><span id="distance">0</span>m</strong></div>
+    <div class="metric"><small>ライフ</small><strong id="life">❤❤❤</strong></div>
+  </div>
+  <div id="gameWrap">
+    <canvas id="game"></canvas>
+    <div id="overlay">
+      <div class="card">
+        <h1>サケ遡上30秒チャレンジ</h1>
+        <p class="subtitle">左右にすべるように泳ぎ、岩と流木をかわして上流へ。<br>金色の泡を取ると距離ボーナスです。</p>
+        <p class="tip">操作：画面を左右にスワイプ<br>30秒でどこまで遡上できるか挑戦</p>
+        <button id="startBtn">遡上スタート</button>
+      </div>
+    </div>
+    <div id="footer"><span class="badge">指一本でプレイ</span></div>
+  </div>
 </div>
 <script>
-(()=>{"use strict";const canvas=document.getElementById("game"),ctx=canvas.getContext("2d"),overlay=document.getElementById("overlay"),startBtn=document.getElementById("startBtn"),timeEl=document.getElementById("time"),distanceEl=document.getElementById("distance"),lifeEl=document.getElementById("life");let W=0,H=0,dpr=1,running=false,last=0,timeLeft=30,distance=0,lives=3,spawnTimer=0,bubbleTimer=0,scroll=0,shake=0;let player={x:0,y:0,w:40,h:76,targetX:0,inv:0},obstacles=[],bubbles=[],particles=[];
-function resize(){const r=canvas.getBoundingClientRect();dpr=Math.min(window.devicePixelRatio||1,2);canvas.width=Math.floor(r.width*dpr);canvas.height=Math.floor(r.height*dpr);W=r.width;H=r.height;ctx.setTransform(dpr,0,0,dpr,0,0);player.y=H*.72;if(!player.x){player.x=W/2;player.targetX=W/2}}addEventListener("resize",resize,{passive:true});resize();
-function reset(){timeLeft=30;distance=0;lives=3;spawnTimer=.25;bubbleTimer=1.2;obstacles=[];bubbles=[];particles=[];scroll=0;shake=0;player.x=W/2;player.targetX=W/2;player.y=H*.72;player.inv=0;updateHUD()}
-function updateHUD(){timeEl.textContent=Math.max(0,timeLeft).toFixed(1);distanceEl.textContent=Math.floor(distance);lifeEl.textContent="❤️".repeat(Math.max(0,lives))+"🖤".repeat(Math.max(0,3-lives))}
-function start(){reset();running=true;last=performance.now();overlay.classList.add("hidden");requestAnimationFrame(loop)}
-function end(){running=false;const best=Number(localStorage.getItem("sake30best")||0),score=Math.floor(distance);if(score>best)localStorage.setItem("sake30best",String(score));const newBest=Math.max(best,score);overlay.innerHTML=`<div class="card"><h1>${lives>0?"🏁 遡上完了":"🌊 力尽きた…"}</h1><p class="subtitle"><b style="font-size:34px">${score}m</b><br>自己ベスト ${newBest}m</p><div class="tip">${score>=500?"産卵場が見えてきた！":score>=300?"いい流れに乗った！":"次は岩の間を滑り抜けよう。"}</div><button id="againBtn">もう一度挑戦</button></div>`;overlay.classList.remove("hidden");document.getElementById("againBtn").onclick=start}
-const rand=(a,b)=>a+Math.random()*(b-a);function spawnObstacle(){const type=Math.random()<.55?"rock":"log",w=type==="rock"?rand(45,72):rand(72,110),h=type==="rock"?rand(38,60):rand(24,34);obstacles.push({x:rand(10,W-w-10),y:-80,w,h,type,rot:rand(-.2,.2)})}function spawnBubble(){bubbles.push({x:rand(28,W-28),y:-30,r:13,pulse:Math.random()*6.28})}
-function hit(a,b){return a.x-a.w*.25<b.x+b.w&&a.x+a.w*.25>b.x&&a.y-a.h*.24<b.y+b.h&&a.y+a.h*.24>b.y}function burst(x,y,color,n=12){for(let i=0;i<n;i++)particles.push({x,y,vx:rand(-120,120),vy:rand(-140,50),life:rand(.3,.7),color})}
-function update(dt){timeLeft-=dt;if(timeLeft<=0){timeLeft=0;updateHUD();end();return}const speed=125+(30-timeLeft)*2.4;distance+=dt*(speed/6);scroll+=dt*speed;player.x+=(player.targetX-player.x)*Math.min(1,dt*12);player.x=Math.max(player.w*.55,Math.min(W-player.w*.55,player.x));if(player.inv>0)player.inv-=dt;spawnTimer-=dt;if(spawnTimer<=0){spawnObstacle();spawnTimer=rand(.68,1.05)*Math.max(.72,timeLeft/30)}bubbleTimer-=dt;if(bubbleTimer<=0){spawnBubble();bubbleTimer=rand(1.6,2.8)}for(const o of obstacles)o.y+=speed*dt;for(const b of bubbles){b.y+=speed*dt;b.pulse+=dt*5}for(const o of obstacles){if(!o.dead&&player.inv<=0&&hit(player,o)){o.dead=true;lives--;player.inv=1.15;shake=.35;burst(player.x,player.y,"#d9f2ff",18);updateHUD();if(lives<=0){end();return}}}for(const b of bubbles){const dx=player.x-b.x,dy=player.y-b.y;if(!b.dead&&dx*dx+dy*dy<900){b.dead=true;distance+=35;burst(b.x,b.y,"#ffd969",14)}}obstacles=obstacles.filter(o=>!o.dead&&o.y<H+100);bubbles=bubbles.filter(b=>!b.dead&&b.y<H+50);for(const p of particles){p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=260*dt;p.life-=dt}particles=particles.filter(p=>p.life>0);if(shake>0)shake-=dt;updateHUD()}
-function drawRiver(){const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,"#0d7da8");g.addColorStop(1,"#06486c");ctx.fillStyle=g;ctx.fillRect(0,0,W,H);ctx.strokeStyle="rgba(255,255,255,.11)";ctx.lineWidth=3;for(let i=0;i<8;i++){const x=i*83+(scroll*.28)%83-50;ctx.beginPath();for(let y=-30;y<H+40;y+=30){const xx=x+Math.sin((y+scroll)*.018+i)*14;y===-30?ctx.moveTo(xx,y):ctx.lineTo(xx,y)}ctx.stroke()}ctx.fillStyle="#1b4a38";ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(24,0);for(let y=0;y<H;y+=55)ctx.lineTo(12+Math.sin((y+scroll)*.012)*12,y);ctx.lineTo(0,H);ctx.closePath();ctx.fill();ctx.beginPath();ctx.moveTo(W,0);ctx.lineTo(W-24,0);for(let y=0;y<H;y+=55)ctx.lineTo(W-12-Math.sin((y+scroll)*.013)*12,y);ctx.lineTo(W,H);ctx.closePath();ctx.fill()}
-function drawObstacle(o){ctx.save();ctx.translate(o.x+o.w/2,o.y+o.h/2);ctx.rotate(o.rot);if(o.type==="rock"){ctx.fillStyle="#52606a";ctx.beginPath();ctx.moveTo(-o.w*.5,o.h*.2);ctx.quadraticCurveTo(-o.w*.35,-o.h*.55,0,-o.h*.5);ctx.quadraticCurveTo(o.w*.45,-o.h*.35,o.w*.5,o.h*.25);ctx.quadraticCurveTo(0,o.h*.55,-o.w*.5,o.h*.2);ctx.fill();ctx.fillStyle="rgba(255,255,255,.18)";ctx.beginPath();ctx.ellipse(-8,-10,12,6,-.3,0,6.28);ctx.fill()}else{ctx.fillStyle="#6e452c";ctx.fillRect(-o.w/2,-o.h/2,o.w,o.h);ctx.strokeStyle="#9b6845";ctx.lineWidth=3;for(let x=-o.w/2+12;x<o.w/2;x+=18){ctx.beginPath();ctx.moveTo(x,-o.h/2);ctx.lineTo(x+8,o.h/2);ctx.stroke()}}ctx.restore()}
-function drawBubble(b){const r=b.r+Math.sin(b.pulse)*2;ctx.save();ctx.shadowColor="#ffd54d";ctx.shadowBlur=18;ctx.fillStyle="#ffd54d";ctx.beginPath();ctx.arc(b.x,b.y,r,0,6.28);ctx.fill();ctx.fillStyle="#fff4ae";ctx.beginPath();ctx.arc(b.x-4,b.y-4,r*.28,0,6.28);ctx.fill();ctx.restore()}
-function drawSalmon(){
-if(player.inv>0&&Math.floor(player.inv*12)%2===0)return;
-const x=player.x,y=player.y;
-ctx.save();ctx.translate(x,y);
-ctx.shadowColor="rgba(0,0,0,.28)";ctx.shadowBlur=8;ctx.shadowOffsetY=5;
-ctx.fillStyle="#d9543c";
-ctx.beginPath();ctx.moveTo(0,player.h*.34);ctx.lineTo(-15,player.h*.58);ctx.lineTo(0,player.h*.50);ctx.lineTo(15,player.h*.58);ctx.closePath();ctx.fill();
-const body=ctx.createLinearGradient(-18,0,18,0);
-body.addColorStop(0,"#db4f3e");body.addColorStop(.48,"#ff8a58");body.addColorStop(1,"#c84236");
-ctx.fillStyle=body;
-ctx.beginPath();ctx.moveTo(0,-player.h*.47);
-ctx.bezierCurveTo(-17,-player.h*.37,-20,-player.h*.05,-15,player.h*.23);
-ctx.bezierCurveTo(-11,player.h*.38,-6,player.h*.42,0,player.h*.43);
-ctx.bezierCurveTo(6,player.h*.42,11,player.h*.38,15,player.h*.23);
-ctx.bezierCurveTo(20,-player.h*.05,17,-player.h*.37,0,-player.h*.47);
-ctx.closePath();ctx.fill();
-ctx.fillStyle="#c94536";
-ctx.beginPath();ctx.moveTo(-13,-4);ctx.lineTo(-30,12);ctx.lineTo(-15,18);ctx.closePath();ctx.fill();
-ctx.beginPath();ctx.moveTo(13,-4);ctx.lineTo(30,12);ctx.lineTo(15,18);ctx.closePath();ctx.fill();
-ctx.fillStyle="rgba(76,42,48,.55)";
-for(const [sx,sy,r] of [[-6,-17,2.4],[7,-9,2.1],[-5,2,1.9],[6,11,1.7],[-3,20,1.5]]){ctx.beginPath();ctx.arc(sx,sy,r,0,Math.PI*2);ctx.fill();}
-ctx.fillStyle="#f5f7f8";
-ctx.beginPath();ctx.arc(-7,-25,2.8,0,Math.PI*2);ctx.arc(7,-25,2.8,0,Math.PI*2);ctx.fill();
-ctx.fillStyle="#1a2630";
-ctx.beginPath();ctx.arc(-7,-25.5,1.3,0,Math.PI*2);ctx.arc(7,-25.5,1.3,0,Math.PI*2);ctx.fill();
-ctx.strokeStyle="rgba(255,235,220,.56)";ctx.lineWidth=1.8;
-ctx.beginPath();ctx.moveTo(-9,-15);ctx.quadraticCurveTo(0,-10,9,-15);ctx.stroke();
-ctx.beginPath();ctx.moveTo(0,-8);ctx.lineTo(0,24);ctx.stroke();
-ctx.restore();
-}function draw(){ctx.save();if(shake>0)ctx.translate(rand(-5,5),rand(-5,5));drawRiver();for(const b of bubbles)drawBubble(b);for(const o of obstacles)drawObstacle(o);drawSalmon();for(const p of particles){ctx.globalAlpha=Math.max(0,p.life*2);ctx.fillStyle=p.color;ctx.fillRect(p.x,p.y,4,4)}ctx.globalAlpha=1;ctx.restore()}
-function loop(now){if(!running)return;const dt=Math.min(.033,(now-last)/1000);last=now;update(dt);draw();if(running)requestAnimationFrame(loop)}function setTarget(clientX){const r=canvas.getBoundingClientRect();player.targetX=clientX-r.left}canvas.addEventListener("pointerdown",e=>{if(running){canvas.setPointerCapture(e.pointerId);setTarget(e.clientX)}});canvas.addEventListener("pointermove",e=>{if(running&&e.buttons)setTarget(e.clientX)});canvas.addEventListener("touchmove",e=>e.preventDefault(),{passive:false});startBtn.onclick=start;draw()})();
+(() => {
+  'use strict';
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+  const overlay = document.getElementById('overlay');
+  const startBtn = document.getElementById('startBtn');
+  const timeEl = document.getElementById('time');
+  const distanceEl = document.getElementById('distance');
+  const lifeEl = document.getElementById('life');
+
+  let W=0, H=0, dpr=1;
+  let running=false, last=0, timeLeft=30, distance=0, lives=3;
+  let spawnTimer=0, bubbleTimer=0, scroll=0, shake=0;
+  let obstacles=[], bubbles=[], particles=[];
+  const player = {x:0,y:0,w:34,h:84,targetX:0,inv:0};
+
+  const rand = (a,b) => a + Math.random() * (b-a);
+
+  function resize(){
+    const r = canvas.getBoundingClientRect();
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.floor(r.width * dpr);
+    canvas.height = Math.floor(r.height * dpr);
+    W = r.width; H = r.height;
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    player.y = H * 0.77;
+    if(!player.x){ player.x = W/2; player.targetX = W/2; }
+  }
+  addEventListener('resize', resize, {passive:true});
+  resize();
+
+  function updateHUD(){
+    timeEl.textContent = Math.max(0,timeLeft).toFixed(1);
+    distanceEl.textContent = Math.floor(distance);
+    lifeEl.textContent = '❤'.repeat(Math.max(0,lives)) + '♡'.repeat(Math.max(0,3-lives));
+  }
+
+  function reset(){
+    timeLeft = 30;
+    distance = 0;
+    lives = 3;
+    spawnTimer = 0.35;
+    bubbleTimer = 1.35;
+    scroll = 0;
+    shake = 0;
+    obstacles = [];
+    bubbles = [];
+    particles = [];
+    player.x = W/2;
+    player.targetX = W/2;
+    player.y = H * 0.77;
+    player.inv = 0;
+    updateHUD();
+  }
+
+  function start(){
+    reset();
+    running = true;
+    last = performance.now();
+    overlay.classList.add('hidden');
+    requestAnimationFrame(loop);
+  }
+
+  function end(){
+    running = false;
+    const best = Number(localStorage.getItem('sake30best') || 0);
+    const score = Math.floor(distance);
+    if(score > best) localStorage.setItem('sake30best', String(score));
+    const newBest = Math.max(best, score);
+    overlay.innerHTML = `
+      <div class="card">
+        <h1>${lives > 0 ? '遡上完了' : '力尽きた…'}</h1>
+        <p class="subtitle"><span style="font-size:34px;font-weight:800;color:#fff">${score}m</span><br>自己ベスト ${newBest}m</p>
+        <p class="tip">${score >= 500 ? '素晴らしい流れです。かなり上流まで到達しました。' : score >= 300 ? 'いい感じです。次は泡を拾って距離を伸ばしましょう。' : 'まずはコース取りを意識すると安定します。'}</p>
+        <button id="againBtn">もう一度挑戦</button>
+      </div>`;
+    overlay.classList.remove('hidden');
+    document.getElementById('againBtn').onclick = start;
+  }
+
+  function spawnObstacle(){
+    const type = Math.random() < 0.58 ? 'rock' : 'log';
+    const w = type === 'rock' ? rand(44,72) : rand(76,116);
+    const h = type === 'rock' ? rand(30,52) : rand(18,28);
+    obstacles.push({
+      x: rand(16, W - w - 16),
+      y: -90,
+      w, h, type,
+      rot: rand(-0.26, 0.26)
+    });
+  }
+
+  function spawnBubble(){
+    bubbles.push({x: rand(34, W-34), y: -40, r: 14, pulse: Math.random() * Math.PI * 2});
+  }
+
+  function burst(x, y, color, count=12, speed=120){
+    for(let i=0;i<count;i++){
+      particles.push({
+        x, y,
+        vx: rand(-speed, speed),
+        vy: rand(-speed*1.2, speed*0.25),
+        life: rand(0.35, 0.8),
+        size: rand(2,5),
+        color
+      });
+    }
+  }
+
+  function hit(a,b){
+    return a.x-a.w*0.22 < b.x+b.w && a.x+a.w*0.22 > b.x &&
+           a.y-a.h*0.20 < b.y+b.h && a.y+a.h*0.20 > b.y;
+  }
+
+  function update(dt){
+    timeLeft -= dt;
+    if(timeLeft <= 0){
+      timeLeft = 0; updateHUD(); end(); return;
+    }
+
+    const speed = 118 + (30 - timeLeft) * 2.05;
+    distance += dt * (speed / 5.8);
+    scroll += dt * speed;
+
+    player.x += (player.targetX - player.x) * Math.min(1, dt * 12);
+    player.x = Math.max(player.w * 0.9, Math.min(W - player.w * 0.9, player.x));
+    if(player.inv > 0) player.inv -= dt;
+
+    spawnTimer -= dt;
+    if(spawnTimer <= 0){
+      spawnObstacle();
+      spawnTimer = rand(0.82, 1.18) * Math.max(0.78, timeLeft / 30);
+    }
+
+    bubbleTimer -= dt;
+    if(bubbleTimer <= 0){
+      spawnBubble();
+      bubbleTimer = rand(1.8, 2.9);
+    }
+
+    for(const o of obstacles) o.y += speed * dt;
+    for(const b of bubbles){ b.y += speed * dt; b.pulse += dt * 4.6; }
+
+    for(const o of obstacles){
+      if(!o.dead && player.inv <= 0 && hit(player,o)){
+        o.dead = true;
+        lives--;
+        player.inv = 1.15;
+        shake = 0.32;
+        burst(player.x, player.y - 8, 'rgba(230,247,255,.92)', 18, 150);
+        updateHUD();
+        if(lives <= 0){ end(); return; }
+      }
+    }
+
+    for(const b of bubbles){
+      const dx = player.x - b.x;
+      const dy = player.y - b.y;
+      if(!b.dead && dx*dx + dy*dy < 960){
+        b.dead = true;
+        distance += 36;
+        burst(b.x, b.y, '#ffe07c', 16, 110);
+      }
+    }
+
+    obstacles = obstacles.filter(o => !o.dead && o.y < H + 100);
+    bubbles = bubbles.filter(b => !b.dead && b.y < H + 60);
+
+    for(const p of particles){
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      p.vy += 250 * dt;
+      p.life -= dt;
+    }
+    particles = particles.filter(p => p.life > 0);
+    if(shake > 0) shake -= dt;
+    updateHUD();
+  }
+
+  function drawRiver(){
+    const g = ctx.createLinearGradient(0,0,0,H);
+    g.addColorStop(0, '#2ea2cf');
+    g.addColorStop(0.58, '#167cab');
+    g.addColorStop(1, '#0f5c84');
+    ctx.fillStyle = g;
+    ctx.fillRect(0,0,W,H);
+
+    const sheen = ctx.createLinearGradient(0,0,W,0);
+    sheen.addColorStop(0, 'rgba(255,255,255,0)');
+    sheen.addColorStop(0.5, 'rgba(255,255,255,.06)');
+    sheen.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = sheen;
+    ctx.fillRect(0,0,W,H);
+
+    ctx.strokeStyle = 'rgba(255,255,255,.11)';
+    ctx.lineWidth = 3;
+    for(let i=0;i<7;i++){
+      const x = i * 92 + (scroll * 0.22) % 92 - 40;
+      ctx.beginPath();
+      for(let y=-40;y<H+50;y+=32){
+        const xx = x + Math.sin((y + scroll) * 0.015 + i * 0.8) * 13;
+        if(y === -40) ctx.moveTo(xx, y); else ctx.lineTo(xx, y);
+      }
+      ctx.stroke();
+    }
+
+    ctx.fillStyle = '#1b5f4d';
+    ctx.beginPath();
+    ctx.moveTo(0,0); ctx.lineTo(24,0);
+    for(let y=0;y<=H;y+=58) ctx.lineTo(10 + Math.sin((y + scroll) * 0.012) * 12, y);
+    ctx.lineTo(0,H); ctx.closePath(); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(W,0); ctx.lineTo(W-24,0);
+    for(let y=0;y<=H;y+=58) ctx.lineTo(W-10 - Math.sin((y + scroll) * 0.013) * 12, y);
+    ctx.lineTo(W,H); ctx.closePath(); ctx.fill();
+
+    ctx.fillStyle = 'rgba(255,255,255,.045)';
+    for(let i=0;i<6;i++){
+      const y = (i * 150 + scroll * 0.55) % (H + 160) - 80;
+      ctx.beginPath();
+      ctx.ellipse(W*0.52 + Math.sin(i + scroll*0.004)*55, y, 100, 20, 0, 0, Math.PI*2);
+      ctx.fill();
+    }
+  }
+
+  function drawObstacle(o){
+    ctx.save();
+    ctx.translate(o.x + o.w/2, o.y + o.h/2);
+    ctx.rotate(o.rot);
+    if(o.type === 'rock'){
+      const rg = ctx.createLinearGradient(-o.w/2, -o.h/2, o.w/2, o.h/2);
+      rg.addColorStop(0, '#7f94a3');
+      rg.addColorStop(1, '#546977');
+      ctx.fillStyle = rg;
+      ctx.beginPath();
+      ctx.moveTo(-o.w*0.46, o.h*0.10);
+      ctx.quadraticCurveTo(-o.w*0.36, -o.h*0.50, 0, -o.h*0.48);
+      ctx.quadraticCurveTo(o.w*0.40, -o.h*0.38, o.w*0.48, o.h*0.12);
+      ctx.quadraticCurveTo(0, o.h*0.56, -o.w*0.46, o.h*0.10);
+      ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,.19)';
+      ctx.beginPath();
+      ctx.ellipse(-o.w*0.10, -o.h*0.18, o.w*0.16, o.h*0.12, -0.4, 0, Math.PI*2);
+      ctx.fill();
+    } else {
+      const lg = ctx.createLinearGradient(-o.w/2, 0, o.w/2, 0);
+      lg.addColorStop(0, '#7e5338');
+      lg.addColorStop(0.5, '#9a6541');
+      lg.addColorStop(1, '#714930');
+      ctx.fillStyle = lg;
+      ctx.beginPath();
+      ctx.moveTo(-o.w/2, -o.h/2);
+      ctx.lineTo(o.w/2, -o.h*0.38);
+      ctx.lineTo(o.w/2, o.h/2);
+      ctx.lineTo(-o.w/2, o.h*0.36);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255,222,190,.20)';
+      ctx.lineWidth = 2;
+      for(let x=-o.w/2+15;x<o.w/2;x+=18){
+        ctx.beginPath(); ctx.moveTo(x,-o.h*0.42); ctx.lineTo(x+7,o.h*0.44); ctx.stroke();
+      }
+    }
+    ctx.restore();
+  }
+
+  function drawBubble(b){
+    const r = b.r + Math.sin(b.pulse) * 1.8;
+    ctx.save();
+    ctx.shadowColor = 'rgba(255,210,88,.65)';
+    ctx.shadowBlur = 16;
+    const bg = ctx.createRadialGradient(b.x-3, b.y-4, 2, b.x, b.y, r);
+    bg.addColorStop(0, '#fff7bf');
+    bg.addColorStop(0.45, '#ffe175');
+    bg.addColorStop(1, '#efb437');
+    ctx.fillStyle = bg;
+    ctx.beginPath(); ctx.arc(b.x,b.y,r,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,.55)';
+    ctx.beginPath(); ctx.arc(b.x-4,b.y-5,r*0.24,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+
+  function drawSalmon(){
+    if(player.inv > 0 && Math.floor(player.inv * 12) % 2 === 0) return;
+    const x = player.x, y = player.y;
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.shadowColor = 'rgba(0,0,0,.24)';
+    ctx.shadowBlur = 16;
+    ctx.shadowOffsetY = 10;
+
+    ctx.fillStyle = '#d55247';
+    ctx.beginPath();
+    ctx.moveTo(0, player.h*0.40);
+    ctx.lineTo(-13, player.h*0.58);
+    ctx.lineTo(0, player.h*0.51);
+    ctx.lineTo(13, player.h*0.58);
+    ctx.closePath();
+    ctx.fill();
+
+    const body = ctx.createLinearGradient(0, -player.h*0.44, 0, player.h*0.43);
+    body.addColorStop(0, '#fa9b74');
+    body.addColorStop(0.35, '#f28063');
+    body.addColorStop(1, '#d95747');
+    ctx.fillStyle = body;
+    ctx.beginPath();
+    ctx.moveTo(0, -player.h*0.47);
+    ctx.bezierCurveTo(-14, -player.h*0.38, -21, -player.h*0.02, -17, player.h*0.22);
+    ctx.bezierCurveTo(-12, player.h*0.37, -6, player.h*0.43, 0, player.h*0.43);
+    ctx.bezierCurveTo(6, player.h*0.43, 12, player.h*0.37, 17, player.h*0.22);
+    ctx.bezierCurveTo(21, -player.h*0.02, 14, -player.h*0.38, 0, -player.h*0.47);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.fillStyle = '#d34d44';
+    ctx.beginPath();
+    ctx.moveTo(-13, -1); ctx.lineTo(-28, 14); ctx.lineTo(-14, 19); ctx.closePath(); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(13, -1); ctx.lineTo(28, 14); ctx.lineTo(14, 19); ctx.closePath(); ctx.fill();
+
+    ctx.fillStyle = '#e06856';
+    ctx.beginPath();
+    ctx.moveTo(0,-player.h*0.25); ctx.lineTo(-7,-player.h*0.13); ctx.lineTo(7,-player.h*0.13); ctx.closePath(); ctx.fill();
+
+    ctx.strokeStyle = 'rgba(255,243,236,.78)';
+    ctx.lineWidth = 2.2;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(0, -player.h*0.28);
+    ctx.lineTo(0, player.h*0.26);
+    ctx.stroke();
+
+    ctx.strokeStyle = 'rgba(255,230,220,.42)';
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    ctx.moveTo(-8, -10); ctx.quadraticCurveTo(0, -6, 8, -10);
+    ctx.moveTo(-7, 8); ctx.quadraticCurveTo(0, 12, 7, 8);
+    ctx.stroke();
+
+    ctx.fillStyle = 'rgba(126,49,42,.32)';
+    for(const [sx,sy,r] of [[-7,-14,1.8],[8,-7,1.6],[-6,3,1.5],[6,12,1.4],[-4,21,1.3]]){
+      ctx.beginPath(); ctx.arc(sx,sy,r,0,Math.PI*2); ctx.fill();
+    }
+
+    ctx.restore();
+  }
+
+  function drawParticles(){
+    for(const p of particles){
+      ctx.globalAlpha = Math.max(0, p.life * 1.8);
+      ctx.fillStyle = p.color;
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI*2); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function draw(){
+    ctx.save();
+    if(shake > 0) ctx.translate(rand(-4,4), rand(-4,4));
+    drawRiver();
+    for(const b of bubbles) drawBubble(b);
+    for(const o of obstacles) drawObstacle(o);
+    drawSalmon();
+    drawParticles();
+    ctx.restore();
+  }
+
+  function loop(now){
+    if(!running) return;
+    const dt = Math.min(0.033, (now - last) / 1000);
+    last = now;
+    update(dt);
+    draw();
+    if(running) requestAnimationFrame(loop);
+  }
+
+  function setTarget(clientX){
+    const r = canvas.getBoundingClientRect();
+    player.targetX = clientX - r.left;
+  }
+
+  canvas.addEventListener('pointerdown', e => {
+    if(running){ canvas.setPointerCapture(e.pointerId); setTarget(e.clientX); }
+  });
+  canvas.addEventListener('pointermove', e => {
+    if(running && e.buttons) setTarget(e.clientX);
+  });
+  canvas.addEventListener('touchmove', e => e.preventDefault(), {passive:false});
+  startBtn.onclick = start;
+  draw();
+})();
 </script>
 </body>
 </html>

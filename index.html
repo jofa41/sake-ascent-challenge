@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
-<title>サケ遡上30秒チャレンジ v8</title>
+<title>サケ遡上30秒チャレンジ v8.1</title>
 <style>
 :root{
   --safe-top: env(safe-area-inset-top, 0px);
@@ -364,8 +364,8 @@ button:active{transform:translateY(1px)}
 
   function drawSalmon(){
     if(player.inv > 0 && Math.floor(player.inv * 12) % 2 === 0) return;
-    const drawW = 58;
-    const drawH = 98;
+    const drawW = 64;
+    const drawH = 108;
     ctx.save();
     ctx.translate(player.x, player.y);
     ctx.shadowColor = 'rgba(0,0,0,.16)';

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
-<title>サケ遡上60秒チャレンジ v10</title>
+<title>サケ遡上60秒チャレンジ v10.1</title>
 <style>
 :root{
   --safe-top: env(safe-area-inset-top, 0px);
@@ -211,9 +211,8 @@ button:active{transform:translateY(1px)}
     const desired = player.x + rand(-62, 62);
     const gapX = Math.max(minCenter, Math.min(maxCenter, desired));
 
-    // ヤナと重なって「絶対に抜けられない」配置になるのを防ぐ。
-    // ヤナより手前に残っている通常障害物は、関門進入前に流して消す。
-    obstacles = obstacles.filter(o => o.y > player.y + 80);
+    // 既に画面へ出た岩・流木は削除しない。
+    // ヤナ前の新規出現停止により、障害物はヤナより先行したまま自然に流れる。
 
     gates.push({
       y: -76,
@@ -270,7 +269,7 @@ button:active{transform:translateY(1px)}
 
     const activeGate = gates.some(g => !g.dead && g.y < player.y + 80);
     const nextGateTime = gateStage < GATE_TIMES.length ? GATE_TIMES[gateStage] : Infinity;
-    const gateApproach = nextGateTime - elapsed <= 3.2;
+    const gateApproach = nextGateTime - elapsed <= 3.8;
     const safeGateWindow = activeGate || gateApproach;
 
     spawnTimer -= dt;

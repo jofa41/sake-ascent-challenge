@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
-<title>サケ遡上30秒チャレンジ v5</title>
+<title>サケ遡上30秒チャレンジ v6</title>
 <style>
 :root{
   --safe-top: env(safe-area-inset-top, 0px);
@@ -365,86 +365,82 @@ button:active{transform:translateY(1px)}
     const x = player.x, y = player.y;
     ctx.save();
     ctx.translate(x, y);
-    ctx.shadowColor = 'rgba(0,0,0,.12)';
-    ctx.shadowBlur = 12;
-    ctx.shadowOffsetY = 5;
+    ctx.shadowColor = 'rgba(0,0,0,.10)';
+    ctx.shadowBlur = 10;
+    ctx.shadowOffsetY = 4;
 
-    // tail
-    ctx.fillStyle = '#f4a36f';
+    // tail fin
+    ctx.fillStyle = '#8ea2b3';
     ctx.beginPath();
     ctx.moveTo(0, player.h*0.34);
     ctx.lineTo(-12, player.h*0.54);
-    ctx.lineTo(0, player.h*0.47);
+    ctx.lineTo(0, player.h*0.46);
     ctx.lineTo(12, player.h*0.54);
     ctx.closePath();
     ctx.fill();
 
-    // body
-    const body = ctx.createLinearGradient(0, -player.h*0.44, 0, player.h*0.42);
-    body.addColorStop(0, '#ffbf91');
-    body.addColorStop(0.42, '#ffa67f');
-    body.addColorStop(1, '#f38e7f');
+    // body silhouette: silver, simple top-down view
+    const body = ctx.createLinearGradient(0, -player.h*0.48, 0, player.h*0.43);
+    body.addColorStop(0, '#c8d6df');
+    body.addColorStop(0.22, '#eef4f7');
+    body.addColorStop(0.55, '#dde6eb');
+    body.addColorStop(1, '#aebfca');
     ctx.fillStyle = body;
     ctx.beginPath();
-    ctx.moveTo(0, -player.h*0.46);
-    ctx.bezierCurveTo(-14, -player.h*0.38, -21, -player.h*0.03, -17, player.h*0.23);
-    ctx.bezierCurveTo(-12, player.h*0.39, -5, player.h*0.43, 0, player.h*0.43);
-    ctx.bezierCurveTo(5, player.h*0.43, 12, player.h*0.39, 17, player.h*0.23);
-    ctx.bezierCurveTo(21, -player.h*0.03, 14, -player.h*0.38, 0, -player.h*0.46);
+    ctx.moveTo(0, -player.h*0.48);
+    ctx.bezierCurveTo(-12, -player.h*0.41, -18, -player.h*0.08, -15, player.h*0.25);
+    ctx.bezierCurveTo(-11, player.h*0.40, -5, player.h*0.44, 0, player.h*0.44);
+    ctx.bezierCurveTo(5, player.h*0.44, 11, player.h*0.40, 15, player.h*0.25);
+    ctx.bezierCurveTo(18, -player.h*0.08, 12, -player.h*0.41, 0, -player.h*0.48);
+    ctx.closePath();
+    ctx.fill();
+
+    // blue head/back cap
+    const head = ctx.createLinearGradient(0, -player.h*0.48, 0, -player.h*0.05);
+    head.addColorStop(0, '#5f7f97');
+    head.addColorStop(1, '#89a3b4');
+    ctx.fillStyle = head;
+    ctx.beginPath();
+    ctx.moveTo(0, -player.h*0.48);
+    ctx.bezierCurveTo(-11, -player.h*0.41, -13, -player.h*0.22, -10, -player.h*0.02);
+    ctx.quadraticCurveTo(0, player.h*0.03, 10, -player.h*0.02);
+    ctx.bezierCurveTo(13, -player.h*0.22, 11, -player.h*0.41, 0, -player.h*0.48);
     ctx.closePath();
     ctx.fill();
 
     // side fins
-    ctx.fillStyle = '#f08d79';
+    ctx.fillStyle = '#97aaba';
     ctx.beginPath();
-    ctx.moveTo(-12, 2); ctx.lineTo(-25, 15); ctx.lineTo(-12, 18); ctx.closePath(); ctx.fill();
+    ctx.moveTo(-12, 2); ctx.lineTo(-24, 15); ctx.lineTo(-11, 18); ctx.closePath(); ctx.fill();
     ctx.beginPath();
-    ctx.moveTo(12, 2); ctx.lineTo(25, 15); ctx.lineTo(12, 18); ctx.closePath(); ctx.fill();
+    ctx.moveTo(12, 2); ctx.lineTo(24, 15); ctx.lineTo(11, 18); ctx.closePath(); ctx.fill();
 
-    // top fin
-    ctx.fillStyle = '#f1a675';
+    // dorsal fin
+    ctx.fillStyle = '#7892a4';
     ctx.beginPath();
-    ctx.moveTo(0,-player.h*0.22); ctx.lineTo(-5,-player.h*0.10); ctx.lineTo(5,-player.h*0.10); ctx.closePath(); ctx.fill();
-
-    // tummy highlight
-    ctx.fillStyle = 'rgba(255,246,236,.58)';
-    ctx.beginPath();
-    ctx.ellipse(0, 8, 7, 20, 0, 0, Math.PI*2);
+    ctx.moveTo(0, -player.h*0.22); ctx.lineTo(-5, -player.h*0.08); ctx.lineTo(5, -player.h*0.08); ctx.closePath();
     ctx.fill();
 
-    // face
-    ctx.fillStyle = '#fffaf4';
-    ctx.beginPath();
-    ctx.arc(-5, -18, 3.4, 0, Math.PI*2);
-    ctx.arc(5, -18, 3.4, 0, Math.PI*2);
-    ctx.fill();
-    ctx.fillStyle = '#3d4751';
-    ctx.beginPath();
-    ctx.arc(-5.2, -18, 1.2, 0, Math.PI*2);
-    ctx.arc(5.2, -18, 1.2, 0, Math.PI*2);
-    ctx.fill();
-    ctx.strokeStyle = 'rgba(88,84,85,.65)';
-    ctx.lineWidth = 1.6;
+    // soft belly/light line
+    ctx.strokeStyle = 'rgba(255,255,255,.70)';
+    ctx.lineWidth = 2;
     ctx.lineCap = 'round';
     ctx.beginPath();
-    ctx.moveTo(-3, -11); ctx.quadraticCurveTo(0, -8, 3, -11);
+    ctx.moveTo(0, -2); ctx.lineTo(0, 22);
     ctx.stroke();
 
-    // cute details
-    ctx.strokeStyle = 'rgba(255,250,245,.72)';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(0, -4); ctx.lineTo(0, 20);
-    ctx.stroke();
-    ctx.strokeStyle = 'rgba(221,117,111,.46)';
-    ctx.lineWidth = 1.3;
+    // subtle decorative body marks only; no facial detail
+    ctx.strokeStyle = 'rgba(255,255,255,.42)';
+    ctx.lineWidth = 1.4;
     ctx.beginPath();
     ctx.moveTo(-7, 4); ctx.quadraticCurveTo(0, 8, 7, 4);
     ctx.moveTo(-6, 15); ctx.quadraticCurveTo(0, 19, 6, 15);
     ctx.stroke();
-    ctx.fillStyle = 'rgba(242,137,126,.30)';
-    ctx.beginPath(); ctx.arc(-10,-9,2.2,0,Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(10,-9,2.2,0,Math.PI*2); ctx.fill();
+
+    ctx.fillStyle = 'rgba(84,106,121,.18)';
+    for(const [sx,sy,r] of [[-6,-8,1.3],[5,-1,1.2],[-5,8,1.1],[4,17,1.0]]){
+      ctx.beginPath(); ctx.arc(sx, sy, r, 0, Math.PI*2); ctx.fill();
+    }
 
     ctx.restore();
   }

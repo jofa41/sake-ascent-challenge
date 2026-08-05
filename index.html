@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
-<title>サケ遡上60秒チャレンジ v10.1</title>
+<title>サケ遡上60秒チャレンジ v10.2</title>
 <style>
 :root{
   --safe-top: env(safe-area-inset-top, 0px);
@@ -61,6 +61,8 @@ button:active{transform:translateY(1px)}
   background:rgba(255,255,255,.10);backdrop-filter:blur(8px);
   color:rgba(244,250,255,.88);font-size:12px;letter-spacing:.04em
 }
+@keyframes distancePop{0%{transform:scale(1)}35%{transform:scale(1.22)}100%{transform:scale(1)}}
+#distance.pop{display:inline-block;animation:distancePop .34s ease-out}
 .hidden{display:none!important}
 </style>
 </head>
@@ -76,7 +78,7 @@ button:active{transform:translateY(1px)}
     <div id="overlay">
       <div class="card">
         <h1>サケ遡上60秒チャレンジ</h1>
-        <p class="subtitle">左右にすべるように泳ぎ、岩と流木をかわして上流へ。<br>きらきらの泡を取りつつ、10秒ごとのヤナ関門をくぐり抜けよう。</p>
+        <p class="subtitle">左右にすべるように泳ぎ、岩と流木をかわして上流へ。<br>光る泡とヤナ突破で距離ボーナス。岩と流木をかわして上流へ。</p>
         <p class="tip">操作：画面を左右にスワイプ<br>60秒でどこまで遡上できるか挑戦<br>10秒ごとにヤナ関門が出現。安全な進路は必ず残ります</p>
         <button id="startBtn">遡上スタート</button>
       </div>
@@ -98,7 +100,7 @@ button:active{transform:translateY(1px)}
   let W=0, H=0, dpr=1;
   let running=false, last=0, timeLeft=60, distance=0, lives=3;
   let spawnTimer=0, bubbleTimer=0, scroll=0, shake=0;
-  let obstacles=[], bubbles=[], particles=[], gates=[];
+  let obstacles=[], bubbles=[], particles=[], gates=[], feedbacks=[];
   let gateStage=0;
   const player = {x:0,y:0,w:34,h:84,targetX:0,inv:0};
   const salmonSprite = new Image();
@@ -138,6 +140,7 @@ button:active{transform:translateY(1px)}
     bubbles = [];
     particles = [];
     gates = [];
+    feedbacks = [];
     gateStage = 0;
     player.x = W/2;
     player.targetX = W/2;
@@ -198,6 +201,18 @@ button:active{transform:translateY(1px)}
         color
       });
     }
+  }
+
+  function showBonus(text, x, y, kind='bubble'){
+    feedbacks.push({
+      text, x, y,
+      life: 1.05,
+      maxLife: 1.05,
+      kind
+    });
+    distanceEl.classList.remove('pop');
+    void distanceEl.offsetWidth;
+    distanceEl.classList.add('pop');
   }
 
   function spawnGate(stage){
@@ -311,8 +326,10 @@ button:active{transform:translateY(1px)}
         if(lives <= 0){ end(); return; }
       } else if(!g.dead && !g.scored && gatePassed(g)){
         g.scored = true;
-        distance += 52 + g.stage * 8;
+        const gateBonus = 52 + g.stage * 8;
+        distance += gateBonus;
         burst(player.x, player.y - 18, 'rgba(255,248,200,.95)', 16, 95);
+        showBonus(`ヤナ突破  ＋${gateBonus}m`, player.x, player.y - 48, 'gate');
       }
     }
 
@@ -323,6 +340,7 @@ button:active{transform:translateY(1px)}
         b.dead = true;
         distance += 36;
         burst(b.x, b.y, '#ffe07c', 16, 110);
+        showBonus('＋36m', player.x, player.y - 42, 'bubble');
       }
     }
 
@@ -337,6 +355,12 @@ button:active{transform:translateY(1px)}
       p.life -= dt;
     }
     particles = particles.filter(p => p.life > 0);
+
+    for(const f of feedbacks){
+      f.y -= 30 * dt;
+      f.life -= dt;
+    }
+    feedbacks = feedbacks.filter(f => f.life > 0);
     if(shake > 0) shake -= dt;
     updateHUD();
   }
@@ -504,6 +528,31 @@ button:active{transform:translateY(1px)}
     ctx.globalAlpha = 1;
   }
 
+  function drawFeedbacks(){
+    for(const f of feedbacks){
+      const progress = 1 - f.life / f.maxLife;
+      const alpha = Math.min(1, f.life * 2.4);
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.font = f.kind === 'gate'
+        ? '800 18px -apple-system,BlinkMacSystemFont,Segoe UI,sans-serif'
+        : '800 20px -apple-system,BlinkMacSystemFont,Segoe UI,sans-serif';
+      ctx.lineWidth = 5;
+      ctx.lineJoin = 'round';
+      ctx.strokeStyle = 'rgba(20,45,62,.72)';
+      ctx.fillStyle = f.kind === 'gate' ? '#fff3b0' : '#fff7cf';
+      const scale = 1 + Math.sin(Math.min(1, progress * 2) * Math.PI) * 0.08;
+      ctx.translate(f.x, f.y);
+      ctx.scale(scale, scale);
+      ctx.strokeText(f.text, 0, 0);
+      ctx.fillText(f.text, 0, 0);
+      ctx.restore();
+    }
+    ctx.globalAlpha = 1;
+  }
+
   function draw(){
     ctx.save();
     if(shake > 0) ctx.translate(rand(-4,4), rand(-4,4));
@@ -513,6 +562,7 @@ button:active{transform:translateY(1px)}
     for(const g of gates) drawGate(g);
     drawSalmon();
     drawParticles();
+    drawFeedbacks();
     ctx.restore();
   }
 

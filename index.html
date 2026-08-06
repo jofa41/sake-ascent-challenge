@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
-<title>サケ遡上チャレンジ v12.1</title>
+<title>サケ遡上チャレンジ v12.2</title>
 <style>
 :root{
   --safe-top: env(safe-area-inset-top, 0px);
@@ -85,7 +85,23 @@ body.mode-extreme #hud{background:linear-gradient(180deg,rgba(78,35,43,.92),rgba
   </div>
   <div id="gameWrap">
     <canvas id="game"></canvas>
-    <div id="overlay"></div>
+    <div id="overlay">
+      <div class="card">
+        <h1>サケ遡上チャレンジ</h1>
+        <p class="subtitle">遊ぶモードを選んでください。<br><small style="opacity:.72">v12.2 静的メニュー確認版</small></p>
+        <div class="mode-grid">
+          <button class="mode-btn standard" data-mode="standard">
+            <strong>STANDARD</strong><span class="seconds">60秒</span>
+            <small>基本の遡上。広めの川筋で、六つのヤナに挑戦。</small>
+          </button>
+          <button class="mode-btn extreme" data-mode="extreme">
+            <strong>EXTREME</strong><span class="seconds">120秒</span>
+            <small>長期戦。流れ、障害物、ヤナが段階的に厳しくなる。</small>
+          </button>
+        </div>
+        <p class="tip">操作：画面を左右にスワイプ<br>光る泡とヤナ突破で距離ボーナス</p>
+      </div>
+    </div>
     <div id="footer"><span class="badge">指一本でプレイ</span></div>
   </div>
 </div>
@@ -185,7 +201,7 @@ body.mode-extreme #hud{background:linear-gradient(180deg,rgba(78,35,43,.92),rgba
     overlay.innerHTML = `
       <div class="card">
         <h1>サケ遡上チャレンジ</h1>
-        <p class="subtitle">遊ぶモードを選んでください。<br><small style="opacity:.72">v12.1 モード選択版</small></p>
+        <p class="subtitle">遊ぶモードを選んでください。<br><small style="opacity:.72">v12.2 静的メニュー確認版</small></p>
         <div class="mode-grid">
           <button class="mode-btn standard" data-mode="standard">
             <strong>STANDARD</strong><span class="seconds">60秒</span>

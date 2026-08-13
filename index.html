@@ -556,7 +556,7 @@ body.mode-survival #hud{background:linear-gradient(180deg,rgba(27,70,58,.92),rgb
       const x = i * 94 + (scroll * 0.18) % 94 - 50;
       ctx.beginPath();
       for(let y=-40;y<H+50;y+=30){
-        const xx = x + Math.sin((y + scroll) * 0.013 + i * 0.7) * 12;
+        const xx = x + Math.sin((y - scroll) * 0.013 + i * 0.7) * 12;
         if(y === -40) ctx.moveTo(xx, y); else ctx.lineTo(xx, y);
       }
       ctx.stroke();
@@ -565,11 +565,11 @@ body.mode-survival #hud{background:linear-gradient(180deg,rgba(27,70,58,.92),rgb
     ctx.fillStyle = '#3a886a';
     ctx.beginPath();
     ctx.moveTo(0,0); ctx.lineTo(26,0);
-    for(let y=0;y<=H;y+=56) ctx.lineTo(12 + Math.sin((y + scroll) * 0.012) * 10, y);
+    for(let y=0;y<=H;y+=56) ctx.lineTo(12 + Math.sin((y - scroll) * 0.012) * 10, y);
     ctx.lineTo(0,H); ctx.closePath(); ctx.fill();
     ctx.beginPath();
     ctx.moveTo(W,0); ctx.lineTo(W-26,0);
-    for(let y=0;y<=H;y+=56) ctx.lineTo(W-12 - Math.sin((y + scroll) * 0.013) * 10, y);
+    for(let y=0;y<=H;y+=56) ctx.lineTo(W-12 - Math.sin((y - scroll) * 0.013) * 10, y);
     ctx.lineTo(W,H); ctx.closePath(); ctx.fill();
   }
 

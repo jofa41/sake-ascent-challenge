@@ -1,1 +1,9 @@
-v12.2 静的メニュー確認版。index.html直下。起動直後からSTANDARD 60秒／EXTREME 120秒をHTMLに固定表示。
+# サケ遡上チャレンジ v13.0
+
+v12.2 の合格済み Standard / Extreme を維持したまま、Survival（∞）を追加した3モード版です。
+
+- STANDARD: 60秒
+- EXTREME: 120秒
+- SURVIVAL: 時間無制限。経過時間を表示し、3ライフを失うまで継続
+
+Survivalでは、時間経過に応じて流速・障害物密度・RiverLineの蛇行・安全通路・ヤナ幅が段階的に厳しくなります。ヤナは10秒ごとに継続して出現します。

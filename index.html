@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
-<title>サケ遡上チャレンジ v12.2</title>
+<title>サケ遡上チャレンジ v13.0</title>
 <style>
 :root{
   --safe-top: env(safe-area-inset-top, 0px);
@@ -62,8 +62,10 @@ button:active{transform:translateY(1px)}
 .mode-btn small{display:block;font-size:12px;line-height:1.45;color:rgba(255,255,255,.82)}
 .mode-btn.standard{background:linear-gradient(180deg,rgba(61,155,220,.52),rgba(37,101,157,.52))}
 .mode-btn.extreme{background:linear-gradient(180deg,rgba(235,126,79,.52),rgba(170,67,59,.52))}
+.mode-btn.survival{background:linear-gradient(180deg,rgba(83,170,115,.55),rgba(42,111,82,.58))}
 .secondary{margin-top:10px;background:rgba(255,255,255,.10);box-shadow:none}
 body.mode-extreme #hud{background:linear-gradient(180deg,rgba(78,35,43,.92),rgba(100,46,48,.82))}
+body.mode-survival #hud{background:linear-gradient(180deg,rgba(27,70,58,.92),rgba(26,91,72,.82))}
 @media(max-width:390px){.mode-grid{grid-template-columns:1fr}.mode-btn{min-height:104px}}
 #footer{position:absolute;left:0;right:0;bottom:12px;text-align:center;pointer-events:none}
 .badge{
@@ -88,7 +90,7 @@ body.mode-extreme #hud{background:linear-gradient(180deg,rgba(78,35,43,.92),rgba
     <div id="overlay">
       <div class="card">
         <h1>サケ遡上チャレンジ</h1>
-        <p class="subtitle">遊ぶモードを選んでください。<br><small style="opacity:.72">v12.2 静的メニュー確認版</small></p>
+        <p class="subtitle">遊ぶモードを選んでください。<br><small style="opacity:.72">v13.0 3モード版</small></p>
         <div class="mode-grid">
           <button class="mode-btn standard" data-mode="standard">
             <strong>STANDARD</strong><span class="seconds">60秒</span>
@@ -97,6 +99,10 @@ body.mode-extreme #hud{background:linear-gradient(180deg,rgba(78,35,43,.92),rgba
           <button class="mode-btn extreme" data-mode="extreme">
             <strong>EXTREME</strong><span class="seconds">120秒</span>
             <small>長期戦。流れ、障害物、ヤナが段階的に厳しくなる。</small>
+          </button>
+          <button class="mode-btn survival" data-mode="survival">
+            <strong>SURVIVAL</strong><span class="seconds">∞</span>
+            <small>時間無制限。川筋とヤナが徐々に厳しくなる、生存距離への挑戦。</small>
           </button>
         </div>
         <p class="tip">操作：画面を左右にスワイプ<br>光る泡とヤナ突破で距離ボーナス</p>
@@ -117,7 +123,7 @@ body.mode-extreme #hud{background:linear-gradient(180deg,rgba(78,35,43,.92),rgba
   const lifeEl = document.getElementById('life');
 
   let W=0, H=0, dpr=1;
-  let running=false, last=0, timeLeft=60, distance=0, lives=3;
+  let running=false, last=0, timeLeft=60, elapsedTime=0, distance=0, lives=3;
   let selectedMode = 'standard';
   let spawnTimer=0, bubbleTimer=0, scroll=0, shake=0;
   let obstacles=[], bubbles=[], particles=[], gates=[], feedbacks=[];
@@ -127,7 +133,7 @@ body.mode-extreme #hud{background:linear-gradient(180deg,rgba(78,35,43,.92),rgba
   const MODE_CONFIGS = Object.freeze({
     standard: Object.freeze({
       id: 'standard', label: 'Standard', timeLimit: 60,
-      baseSpeed: 112, speedRamp: 1.45,
+      baseSpeed: 112, speedRamp: 1.45, maxSpeed: 205,
       obstacleInterval: [0.82, 1.18], bubbleInterval: [1.8, 2.9],
       gateTimes: [10,20,30,40,50,57],
       gateGapWidths: [190,170,150,135,120,108],
@@ -135,11 +141,19 @@ body.mode-extreme #hud{background:linear-gradient(180deg,rgba(78,35,43,.92),rgba
     }),
     extreme: Object.freeze({
       id: 'extreme', label: 'Extreme', timeLimit: 120,
-      baseSpeed: 122, speedRamp: 1.15,
+      baseSpeed: 122, speedRamp: 1.15, maxSpeed: 260,
       obstacleInterval: [0.66, 0.98], bubbleInterval: [2.15, 3.25],
       gateTimes: [10,20,30,40,50,60,70,80,90,100,110,117],
       gateGapWidths: [178,164,150,138,128,118,110,104,98,94,90,86],
       corridorWidth: 122, riverShiftMin: 0.92, riverShiftMax: 1.42, riverTurnRange: 86
+    }),
+    survival: Object.freeze({
+      id: 'survival', label: 'Survival', timeLimit: null,
+      baseSpeed: 116, speedRamp: 0.34, maxSpeed: 188,
+      obstacleInterval: [0.78, 1.10], bubbleInterval: [2.0, 3.0],
+      gateEvery: 10, gateGapStart: 176, gateGapStep: 6, gateGapMin: 86,
+      corridorWidth: 134, corridorMin: 96, corridorShrinkPerSec: 0.22,
+      riverShiftMin: 1.05, riverShiftMax: 1.62, riverTurnRange: 78, riverTurnRamp: 0.10
     })
   });
   let currentConfig = MODE_CONFIGS.standard;
@@ -165,13 +179,16 @@ body.mode-extreme #hud{background:linear-gradient(180deg,rgba(78,35,43,.92),rgba
   resize();
 
   function updateHUD(){
-    timeEl.textContent = Math.max(0,timeLeft).toFixed(1);
+    timeEl.textContent = currentConfig.id === 'survival'
+      ? elapsedTime.toFixed(1)
+      : Math.max(0,timeLeft).toFixed(1);
     distanceEl.textContent = Math.floor(distance);
     lifeEl.textContent = '❤'.repeat(Math.max(0,lives)) + '♡'.repeat(Math.max(0,3-lives));
   }
 
   function reset(){
-    timeLeft = currentConfig.timeLimit;
+    timeLeft = currentConfig.timeLimit ?? Infinity;
+    elapsedTime = 0;
     distance = 0;
     lives = 3;
     spawnTimer = 0.35;
@@ -197,11 +214,11 @@ body.mode-extreme #hud{background:linear-gradient(180deg,rgba(78,35,43,.92),rgba
 
   function showModeMenu(){
     running = false;
-    document.body.classList.remove('mode-extreme');
+    document.body.classList.remove('mode-extreme','mode-survival');
     overlay.innerHTML = `
       <div class="card">
         <h1>サケ遡上チャレンジ</h1>
-        <p class="subtitle">遊ぶモードを選んでください。<br><small style="opacity:.72">v12.2 静的メニュー確認版</small></p>
+        <p class="subtitle">遊ぶモードを選んでください。<br><small style="opacity:.72">v13.0 3モード版</small></p>
         <div class="mode-grid">
           <button class="mode-btn standard" data-mode="standard">
             <strong>STANDARD</strong><span class="seconds">60秒</span>
@@ -210,6 +227,10 @@ body.mode-extreme #hud{background:linear-gradient(180deg,rgba(78,35,43,.92),rgba
           <button class="mode-btn extreme" data-mode="extreme">
             <strong>EXTREME</strong><span class="seconds">120秒</span>
             <small>長期戦。流れ、障害物、ヤナが段階的に厳しくなる。</small>
+          </button>
+          <button class="mode-btn survival" data-mode="survival">
+            <strong>SURVIVAL</strong><span class="seconds">∞</span>
+            <small>時間無制限。川筋とヤナが徐々に厳しくなる、生存距離への挑戦。</small>
           </button>
         </div>
         <p class="tip">操作：画面を左右にスワイプ<br>光る泡とヤナ突破で距離ボーナス</p>
@@ -221,7 +242,8 @@ body.mode-extreme #hud{background:linear-gradient(180deg,rgba(78,35,43,.92),rgba
     selectedMode = mode;
     currentConfig = MODE_CONFIGS[selectedMode] || MODE_CONFIGS.standard;
     document.body.classList.toggle('mode-extreme', selectedMode === 'extreme');
-    timeLabelEl.textContent = '残り';
+    document.body.classList.toggle('mode-survival', selectedMode === 'survival');
+    timeLabelEl.textContent = selectedMode === 'survival' ? '経過' : '残り';
     reset();
     running = true;
     last = performance.now();
@@ -236,14 +258,19 @@ body.mode-extreme #hud{background:linear-gradient(180deg,rgba(78,35,43,.92),rgba
     const score = Math.floor(distance);
     if(score > best) localStorage.setItem(key, String(score));
     const newBest = Math.max(best, score);
-    const completed = lives > 0;
-    const comment = currentConfig.id === 'extreme'
-      ? (score >= 2200 ? '120秒を泳ぎ切った、堂々の遡上です。' : score >= 1350 ? '後半の細い川筋まで食らいつきました。' : '序盤は大きく避け、ヤナ前で川筋へ戻ると安定します。')
-      : (score >= 1000 ? '見事な60秒完走です。六つのヤナを越えました。' : score >= 650 ? 'いい遡上です。後半の狭いヤナにも対応できています。' : '進路を大きく取り、ヤナ前では川筋を意識すると安定します。');
+    const completed = lives > 0 && currentConfig.id !== 'survival';
+    const comment = currentConfig.id === 'survival'
+      ? (score >= 3000 ? '驚異の生存距離です。川筋の変化を完全に読めています。' : score >= 1600 ? 'かなり上流まで到達しました。後半は小さな修正操作が鍵です。' : 'ヤナ前で中央へ戻り、泡を追い過ぎないと生存時間が伸びます。')
+      : currentConfig.id === 'extreme'
+        ? (score >= 2200 ? '120秒を泳ぎ切った、堂々の遡上です。' : score >= 1350 ? '後半の細い川筋まで食らいつきました。' : '序盤は大きく避け、ヤナ前で川筋へ戻ると安定します。')
+        : (score >= 1000 ? '見事な60秒完走です。六つのヤナを越えました。' : score >= 650 ? 'いい遡上です。後半の狭いヤナにも対応できています。' : '進路を大きく取り、ヤナ前では川筋を意識すると安定します。');
+    const modeSummary = currentConfig.id === 'survival'
+      ? `${currentConfig.label}  ${elapsedTime.toFixed(1)}秒生存`
+      : `${currentConfig.label} ${currentConfig.timeLimit}秒`;
     overlay.innerHTML = `
       <div class="card">
         <h1>${completed ? '遡上完了' : '力尽きた…'}</h1>
-        <p style="margin:-2px 0 12px;color:#ffe3ad;font-weight:800;letter-spacing:.08em">${currentConfig.label} ${currentConfig.timeLimit}秒</p>
+        <p style="margin:-2px 0 12px;color:#ffe3ad;font-weight:800;letter-spacing:.08em">${modeSummary}</p>
         <p class="subtitle"><span style="font-size:34px;font-weight:800;color:#fff">${score}m</span><br>このモードの自己ベスト ${newBest}m</p>
         <p class="tip">${comment}</p>
         <button id="againBtn">同じモードでもう一度</button>
@@ -308,7 +335,10 @@ body.mode-extreme #hud{background:linear-gradient(180deg,rgba(78,35,43,.92),rgba
   }
 
   function spawnGate(stage){
-    const gapW = Math.min(currentConfig.gateGapWidths[stage] || currentConfig.gateGapWidths.at(-1), W - 100);
+    const configuredGap = currentConfig.id === 'survival'
+      ? Math.max(currentConfig.gateGapMin, currentConfig.gateGapStart - stage * currentConfig.gateGapStep)
+      : (currentConfig.gateGapWidths[stage] || currentConfig.gateGapWidths.at(-1));
+    const gapW = Math.min(configuredGap, W - 100);
     const margin = 18;
     const minCenter = margin + gapW/2;
     const maxCenter = W - margin - gapW/2;
@@ -354,24 +384,36 @@ body.mode-extreme #hud{background:linear-gradient(180deg,rgba(78,35,43,.92),rgba
   }
 
   function update(dt){
-    timeLeft -= dt;
-    if(timeLeft <= 0){
-      timeLeft = 0; updateHUD(); end(); return;
+    elapsedTime += dt;
+    if(currentConfig.id !== 'survival'){
+      timeLeft -= dt;
+      if(timeLeft <= 0){
+        timeLeft = 0; updateHUD(); end(); return;
+      }
     }
 
-    const elapsed = currentConfig.timeLimit - timeLeft;
+    const elapsed = elapsedTime;
 
     // 見えない遡上ラインを緩やかに蛇行させる。
     riverLine.changeTimer -= dt;
     if(riverLine.changeTimer <= 0){
+      if(currentConfig.id === 'survival') {
+        riverLine.corridorWidth = Math.max(
+          currentConfig.corridorMin,
+          Math.min(currentConfig.corridorWidth, W * 0.42) - elapsed * currentConfig.corridorShrinkPerSec
+        );
+      }
       const edge = riverLine.corridorWidth/2 + 26;
-      const next = riverLine.targetX + rand(-currentConfig.riverTurnRange, currentConfig.riverTurnRange);
+      const turnRange = currentConfig.id === 'survival'
+        ? Math.min(112, currentConfig.riverTurnRange + elapsed * currentConfig.riverTurnRamp)
+        : currentConfig.riverTurnRange;
+      const next = riverLine.targetX + rand(-turnRange, turnRange);
       riverLine.targetX = Math.max(edge, Math.min(W-edge, next));
       riverLine.changeTimer = rand(currentConfig.riverShiftMin, currentConfig.riverShiftMax);
     }
     riverLine.x += (riverLine.targetX - riverLine.x) * Math.min(1, dt * 1.75);
 
-    const speed = currentConfig.baseSpeed + elapsed * currentConfig.speedRamp;
+    const speed = Math.min(currentConfig.maxSpeed || Infinity, currentConfig.baseSpeed + elapsed * currentConfig.speedRamp);
     distance += dt * (speed / 5.8);
     scroll += dt * speed;
 
@@ -379,20 +421,28 @@ body.mode-extreme #hud{background:linear-gradient(180deg,rgba(78,35,43,.92),rgba
     player.x = Math.max(player.w * 0.9, Math.min(W - player.w * 0.9, player.x));
     if(player.inv > 0) player.inv -= dt;
 
-    if(gateStage < currentConfig.gateTimes.length && elapsed >= currentConfig.gateTimes[gateStage]){
+    const nextGateTime = currentConfig.id === 'survival'
+      ? (gateStage + 1) * currentConfig.gateEvery
+      : (gateStage < currentConfig.gateTimes.length ? currentConfig.gateTimes[gateStage] : Infinity);
+    if(elapsed >= nextGateTime){
       spawnGate(gateStage);
       gateStage++;
     }
 
     const activeGate = gates.some(g => !g.dead && g.y < player.y + 80);
-    const nextGateTime = gateStage < currentConfig.gateTimes.length ? currentConfig.gateTimes[gateStage] : Infinity;
-    const gateApproach = nextGateTime - elapsed <= 3.8;
+    const followingGateTime = currentConfig.id === 'survival'
+      ? (gateStage + 1) * currentConfig.gateEvery
+      : (gateStage < currentConfig.gateTimes.length ? currentConfig.gateTimes[gateStage] : Infinity);
+    const gateApproach = followingGateTime - elapsed <= 3.8;
     const safeGateWindow = activeGate || gateApproach;
 
     spawnTimer -= dt;
     if(spawnTimer <= 0){
       if(!safeGateWindow) spawnObstacle();
-      spawnTimer = rand(...currentConfig.obstacleInterval) * Math.max(0.74, timeLeft / currentConfig.timeLimit);
+      const spawnScale = currentConfig.id === 'survival'
+        ? Math.max(0.68, 1 - elapsed / 420)
+        : Math.max(0.74, timeLeft / currentConfig.timeLimit);
+      spawnTimer = rand(...currentConfig.obstacleInterval) * spawnScale;
     }
 
     bubbleTimer -= dt;

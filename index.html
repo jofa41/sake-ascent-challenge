@@ -90,7 +90,7 @@ body.mode-survival #hud{background:linear-gradient(180deg,rgba(27,70,58,.92),rgb
     <div id="overlay">
       <div class="card">
         <h1>サケ遡上チャレンジ</h1>
-        <p class="subtitle">遊ぶモードを選んでください。<br><small style="opacity:.72">v13.0 3モード版</small></p>
+        <p class="subtitle">遊ぶモードを選んでください。<br><small style="opacity:.72">v13.1 Survival難易度調整版</small></p>
         <div class="mode-grid">
           <button class="mode-btn standard" data-mode="standard">
             <strong>STANDARD</strong><span class="seconds">60秒</span>
@@ -149,11 +149,15 @@ body.mode-survival #hud{background:linear-gradient(180deg,rgba(27,70,58,.92),rgb
     }),
     survival: Object.freeze({
       id: 'survival', label: 'Survival', timeLimit: null,
-      baseSpeed: 116, speedRamp: 0.34, maxSpeed: 188,
-      obstacleInterval: [0.78, 1.10], bubbleInterval: [2.0, 3.0],
-      gateEvery: 10, gateGapStart: 176, gateGapStep: 6, gateGapMin: 86,
-      corridorWidth: 134, corridorMin: 96, corridorShrinkPerSec: 0.22,
-      riverShiftMin: 1.05, riverShiftMax: 1.62, riverTurnRange: 78, riverTurnRamp: 0.10
+      // 120秒時点でExtreme終盤相当へ到達し、その先はさらに難化する。
+      baseSpeed: 112, speedRamp: 1.23, maxSpeed: 330,
+      obstacleInterval: [0.66, 0.98], obstacleScaleFloor: 0.45, obstacleScaleRampSec: 462,
+      bubbleInterval: [2.15, 3.25],
+      gateEvery: 10, gateGapStart: 176, gateGapStep: 8, gateGapMin: 72,
+      corridorWidth: 138, corridorMin: 78, corridorShrinkPerSec: 0.14,
+      riverShiftMin: 1.15, riverShiftMax: 1.75, riverShiftDecayPerSec: 0.00275,
+      riverShiftFloorMin: 0.62, riverShiftFloorMax: 0.95,
+      riverTurnRange: 78, riverTurnRamp: 0.10
     })
   });
   let currentConfig = MODE_CONFIGS.standard;
@@ -218,7 +222,7 @@ body.mode-survival #hud{background:linear-gradient(180deg,rgba(27,70,58,.92),rgb
     overlay.innerHTML = `
       <div class="card">
         <h1>サケ遡上チャレンジ</h1>
-        <p class="subtitle">遊ぶモードを選んでください。<br><small style="opacity:.72">v13.0 3モード版</small></p>
+        <p class="subtitle">遊ぶモードを選んでください。<br><small style="opacity:.72">v13.1 Survival難易度調整版</small></p>
         <div class="mode-grid">
           <button class="mode-btn standard" data-mode="standard">
             <strong>STANDARD</strong><span class="seconds">60秒</span>
@@ -398,9 +402,10 @@ body.mode-survival #hud{background:linear-gradient(180deg,rgba(27,70,58,.92),rgb
     riverLine.changeTimer -= dt;
     if(riverLine.changeTimer <= 0){
       if(currentConfig.id === 'survival') {
+        const corridorStart = Math.min(currentConfig.corridorWidth, W * 0.42);
         riverLine.corridorWidth = Math.max(
           currentConfig.corridorMin,
-          Math.min(currentConfig.corridorWidth, W * 0.42) - elapsed * currentConfig.corridorShrinkPerSec
+          corridorStart - elapsed * currentConfig.corridorShrinkPerSec
         );
       }
       const edge = riverLine.corridorWidth/2 + 26;
@@ -409,7 +414,19 @@ body.mode-survival #hud{background:linear-gradient(180deg,rgba(27,70,58,.92),rgb
         : currentConfig.riverTurnRange;
       const next = riverLine.targetX + rand(-turnRange, turnRange);
       riverLine.targetX = Math.max(edge, Math.min(W-edge, next));
-      riverLine.changeTimer = rand(currentConfig.riverShiftMin, currentConfig.riverShiftMax);
+      if(currentConfig.id === 'survival') {
+        const shiftMin = Math.max(
+          currentConfig.riverShiftFloorMin,
+          currentConfig.riverShiftMin - elapsed * currentConfig.riverShiftDecayPerSec
+        );
+        const shiftMax = Math.max(
+          currentConfig.riverShiftFloorMax,
+          currentConfig.riverShiftMax - elapsed * currentConfig.riverShiftDecayPerSec
+        );
+        riverLine.changeTimer = rand(shiftMin, shiftMax);
+      } else {
+        riverLine.changeTimer = rand(currentConfig.riverShiftMin, currentConfig.riverShiftMax);
+      }
     }
     riverLine.x += (riverLine.targetX - riverLine.x) * Math.min(1, dt * 1.75);
 
@@ -440,7 +457,7 @@ body.mode-survival #hud{background:linear-gradient(180deg,rgba(27,70,58,.92),rgb
     if(spawnTimer <= 0){
       if(!safeGateWindow) spawnObstacle();
       const spawnScale = currentConfig.id === 'survival'
-        ? Math.max(0.68, 1 - elapsed / 420)
+        ? Math.max(currentConfig.obstacleScaleFloor, 1 - elapsed / currentConfig.obstacleScaleRampSec)
         : Math.max(0.74, timeLeft / currentConfig.timeLimit);
       spawnTimer = rand(...currentConfig.obstacleInterval) * spawnScale;
     }
